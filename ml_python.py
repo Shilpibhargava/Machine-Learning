@@ -35,3 +35,22 @@ print(dataset.head(20))
 #descriptions, statistical summary
 
 print(dataset.describe())
+
+#count(groupby(class))
+
+print(dataset.groupby('class').size())
+
+#univariate plot to understand each of the attributes
+
+dataset.plot(kind='box',subplots=True,layout=(2,2),sharex=False, sharey=False)
+plt.show()
+
+#histogram representation of the dataset
+
+dataset.hist()
+plt.show()
+
+#multivariate plots
+
+scatter_matrix(dataset)
+plt.show()
