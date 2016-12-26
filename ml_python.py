@@ -24,33 +24,92 @@ url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
 names = ['sepal-length','sepal-width','petal-length','petal-width','class']
 dataset = pandas.read_csv(url,names=names)
 
-#shape
+##shape
+#
+#print(dataset.shape)
+#
+##preview of the dataset
+#
+#print(dataset.head(20))
+#
+##descriptions, statistical summary
+#
+#print(dataset.describe())
+#
+##count(groupby(class))
+#
+#print(dataset.groupby('class').size())
+#
+##univariate plot to understand each of the attributes
+#
+#dataset.plot(kind='box',subplots=True,layout=(2,2),sharex=False, sharey=False)
+#plt.show()
+#
+##histogram representation of the dataset
+#
+#dataset.hist()
+#plt.show()
+#
+##multivariate plots
+#
+#scatter_matrix(dataset)
+##plt.show()
 
-print(dataset.shape)
+#creating a training and cross validation set
 
-#preview of the dataset
+array = dataset.values
+X = array[:,0:4]
+Y = array[:,4]
+A = array[:,0]
+validation_size = 0.20
+seed = 7
+X_train, X_validation, Y_train, Y_validation = cross_validation.train_test_split(X,Y,test_size = validation_size,random_state=seed)
 
-print(dataset.head(20))
+#ten-fold cross validation
 
-#descriptions, statistical summary
+num_folds= 10
+num_instances = len(X_train)
+seed = 7
+scoring = 'accuracy'
 
-print(dataset.describe())
+#evaluating different algorithms
 
-#count(groupby(class))
+models = []
+models.append(('LR',LogisticRegression()))
+models.append(('LDA',LinearDiscriminantAnalysis()))
+models.append(('KNN',KNeighborsClassifier()))
+models.append(('CART',DecisionTreeClassifier()))
+models.append(('NB',GaussianNB()))
+models.append(('SVM',SVC()))
 
-print(dataset.groupby('class').size())
+results = []
+names = []
 
-#univariate plot to understand each of the attributes
+for name, model in models:
+    kfold = cross_validation.KFold(n=num_instances,n_folds=num_folds,random_state=seed)
+    cv_results = cross_validation.cross_val_score(model,X_train,Y_train,cv=kfold,scoring=scoring)
+    results.append(cv_results)
+    names.append(name)
+    msg = "%s: %f (%f)" % (name,cv_results.mean(), cv_results.std())
+    print(msg)
+    
+#comparing algorithms
 
-dataset.plot(kind='box',subplots=True,layout=(2,2),sharex=False, sharey=False)
+fig = plt.figure()
+fig.suptitle('Algorithm Comparison')
+ax = fig.add_subplot(111)
+plt.boxplot(results)
+ax.set_xticklabels(names)
 plt.show()
 
-#histogram representation of the dataset
+#predictions on cross validation set
 
-dataset.hist()
-plt.show()
+knn= KNeighborsClassifier()
+knn.fit(X_train,Y_train)
+predictions = knn.predict(X_validation)
+print(accuracy_score(Y_validation,predictions))
+print(confusion_matrix(Y_validation,predictions))
+print(classification_report(Y_validation,predictions))
 
-#multivariate plots
 
-scatter_matrix(dataset)
-plt.show()
+
